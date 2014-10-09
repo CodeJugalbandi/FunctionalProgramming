@@ -1,0 +1,34 @@
+//Pre-baked code
+
+##Currying/PFA
+class CustomerRepository {
+  def findBy(Integer id) {
+     if(id <= 0) {
+       throw new RuntimeException('cust not found')
+     } 
+     [id: id, name: "Cust Name #$id"]
+  }
+}
+
+
+
+
+
+
+
+
+
+
+## Sequencing
+(def using-composition
+ (let [f (comp
+          (partial clojure.string/join "\n")
+          (partial filter (fn [s] (<= (count s) 3)))
+          (partial map clojure.string/capitalize)
+          (fn [s] (clojure.string/split s #"\s")))]
+   (f words)))
+(println using-composition)
+
+
+
+
