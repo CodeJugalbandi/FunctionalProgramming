@@ -27,8 +27,7 @@ l(1)
 l(4)
 ~~~
 
-**KRISHNA** Hey, what about functions, how are they defined? Lets say I want to define a function 
-to square a number.  I define a function that takes in a number and .  
+**KRISHNA** Hey, what about functions, how are they defined? Lets say I want to define a function to square a number.  In Dr. Racket, I can define a square function that takes in a number like this
 ~~~
 (define (square x) (* x x))
 (square 4)
@@ -88,6 +87,7 @@ scala> List(3, 2, 1).map(squareMethod)
 ~~~
 
 **KRISHNA** However, I can define a Function as object as well, such as square 
+~~~
 scala> val square = (x: Int) => x * x 
 
 scala> square(2)

@@ -56,6 +56,7 @@ scala> List(3, 2, 1).map(squareMethod)
 ~~~
 
 **KRISHNA** However, I can define a Function as object as well, such as square 
+~~~
 scala> val square = (x: Int) => x * x 
 
 scala> square(2)
