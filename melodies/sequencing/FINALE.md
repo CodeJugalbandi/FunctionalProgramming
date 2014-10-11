@@ -1,3 +1,4 @@
+```
 (def using-arrow
   (->>  (split words #"\s")
         (map capitalize)
@@ -7,3 +8,4 @@
 
 val composed = split andThen capitalize andThen filter andThen join
 def composed = split >> capitalize >> filter >> join
+```
