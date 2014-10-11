@@ -107,16 +107,13 @@ Bramha then opens up the scala code that was pre-written
   val httpRequest = Map("objectId" -> "1") 
   val cust = authenticateWithAuthorizeWithRepo(httpRequest)
 ~~~
-**BRAMHA**  If you observe the above code, unlike Groovy, I don't invoke any special method 
-to do currying, by using multi-parameter functions, Scala gives you currying for free.  
-All I do here is first convert the methods authorizer and authenticator to function
-type by partial function application using _ to give me authorize and authenticate function objects. 
+**BRAMHA**  If you observe the above code, unlike Groovy, I don't invoke any special method to do currying, by using multi-parameter functions, Scala gives you currying for free.  All I do here is first convert the methods authorizer and authenticator to function type by partial function application using _ to give me authorize and authenticate function objects. 
 Then I inject the repository in authorize and because of currying it then gets re-shaped 
-into a function that goes from Request => Option[Customer] which is the exact function type 
+into a function that goes from `Request => Option[Customer]` which is the exact function type 
 required by authenticator method's first parameter.  Notice, because of currying the
-signature of the authenticate is (Request => Option[Customer]) => (Request => Option[Customer]) and
-after injecting the authorize(new CustomerRepository) into authenticate, the signature of
-authenticateWithAuthorizeWithRepo function becomes Request => Option[Customer]
+signature of the authenticate is `(Request => Option[Customer]) => (Request => Option[Customer])` and
+after injecting the `authorize(new CustomerRepository)` into authenticate, the signature of
+`authenticateWithAuthorizeWithRepo` function becomes `Request => Option[Customer]`
 
 **KRISHNA** By passing functions around we already get DI, for free, but by 
 currying or by using partially applied function we get contextual DI, because in 

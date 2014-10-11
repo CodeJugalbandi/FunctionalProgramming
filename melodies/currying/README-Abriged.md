@@ -76,15 +76,10 @@ println cust.name
 we can chain them and the request can flow through each of them.
 
 **BRAMHA**  Let me show you some Scala code that does the same thing. 
-Bramha then opens up the DataDirectedAndDI.scala that was pre-written
+Bramha then opens up the currying.scala that was pre-written
 
 **BRAMHA**  If you observe the above code, unlike Groovy, I don't invoke any special method 
-to do currying, by using multi-parameter functions, Scala gives you currying for free.  
-All I do here is first convert the methods authorizer and authenticator to function
-type by partial function application using _ to give me authorize and authenticate function objects. 
-Then I inject the repository in authorize and because of currying it then gets re-shaped 
-into a function that goes from Request => Option[Customer] which is the exact function type 
-required by authenticator method's first parameter.
+to do currying, by using multi-parameter functions, Scala gives you currying for free.  All I do here is first convert the methods authorizer and authenticator to function type by partial function application using `_` to give me authorize and authenticate function objects.  Then I inject the repository in authorize and because of currying it then gets re-shaped into a function that goes from `Request => Option[Customer]` which is the exact function type required by authenticator method's first parameter.
 
 **KRISHNA** By passing functions around we already get DI, for free, but by 
 currying or by using partially applied function we get contextual DI, because in 
