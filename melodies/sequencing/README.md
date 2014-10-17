@@ -1,8 +1,8 @@
 # Sequencing
 
-##
-**BRAMHA** Lets say I want to extract and capitalize words that have size less than or 
- equal to 3 and I'll do this in Ruby, in an imperative style, with mutation of variables:
+**BRAMHA** Lets say I want to extract and capitalize words (from a collection of words) that have size less than or equal to 3.
+
+In Ruby, in an imperative style, with mutation of variables, it would look like this:
 
 ```
 words = "all mimsy were the borogoves"
@@ -16,7 +16,7 @@ words_s = caps_words.join("\n")
 ```
 
 **BRAMHA** In the above code, enumeration and filtering are interleaved.  Let's try and
-seperate eunumerations and filtering:
+seperate eunumeration and filtering:
 
 ```
 words = "all mimsy were the borogoves"
@@ -28,7 +28,7 @@ end.join ("\n")
 ```
 
 **BRAMHA** This feels a bit more structured, we're chaining operations, one after the other. 
-This style is called sequencing, where we're moving data down processing pipelines. 
+This style is called `sequencing`, where we're moving data down processing pipelines. 
 
 **BRAMHA** In Clojure, we could chain functions together through just function nesting: 
 ```
@@ -40,8 +40,7 @@ This style is called sequencing, where we're moving data down processing pipelin
                      (split words #"\s")))))
 (println using-nesting)
 ```
-**BRAMHA** But, parens is a code smell in Clojure/Lisp, so let's try and lose a few 
-through function composition:
+**BRAMHA** This is hard to understand. Deep nesting leads to many parentheses in Clojure: considered a code smell in Clojure. Let's try and lose a few parens through function composition:
 
 ```
 (def using-composition
@@ -54,8 +53,8 @@ through function composition:
 (println using-composition)
 ```
 
-**BRAMHA** The awkward thing about these styles of coding is the order of functions seem 
-back to front. The Arrow syntax sidesteps composition in lieu of a threading-macro:
+**BRAMHA** The awkward thing about these styles of coding is that the order of functions seem 
+back to front. The `arrow` syntax sidesteps composition in lieu of a threading-macro:
 
 ```
 (def using-arrow
@@ -65,6 +64,10 @@ back to front. The Arrow syntax sidesteps composition in lieu of a threading-mac
         (join "\n")))
 (println using-arrow)
 ```
+
+**KRISHNA** BTW, why is it called a `threading-macro` in Clojure? The threading word in there makes me think of process threads.
+ 
+**BRAMHA** The word 'threading' is used in the sense of threading a needle through cloth, not to be confused with process threads! Since it is implemented as a macro, is is called a threading-macro.
 
 **KRISHNA** Lets see that how can we achieve the same in Scala. I'll first show using chaining...
 ```
@@ -94,17 +97,12 @@ println(words
   splitCapitalizeFilterAndJoin (words)
 ~~~
 
-**KRISHNA** However the above is not flowing against the grain of thought.  Let me
-have the cake and eat it too...I can make use of Scala's `andThen`
+**KRISHNA** Just like in your clojure nesting and composition examples, this is flowing against the grain of thought.  Let me
+have the cake and eat it too. I can make use of Scala's `andThen`
 ~~~
   val splitCapitalizeFilterAndJoin2 = split andThen capitalize andThen filter andThen join
   splitCapitalizeFilterAndJoin2 (words)
 ~~~
 
-**KRISHNA** BTW, why is it called threading-macro in Clojure, when its a case of `andThen`?  
-The threading word in there makes me think of process threads.
- 
-**BRAMHA** These are not process thread, they are there in the sense of stitching the 
-functions, a sort of glue.
+**BRAHMA** In whatever functional programming language you're using, if you find yourself deeply nesting functions, you can be sure there is a better way of "threading" functions together. Moreover, if you are going against the "grain of thought", look for a way in the language to go with the grain!
 
-**KRISHNA** Oh I see!  Lets move on to the next melody.
