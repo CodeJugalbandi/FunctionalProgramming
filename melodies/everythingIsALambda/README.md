@@ -1,4 +1,4 @@
-**BRAMHA** In FP languages, data structures don't behave in the way we’re used to in OO land:
+**BRAMHA** In FP languages, data structures don't behave in the way we’re used to in OO land. For instance, in Clojure:
 ~~~
 (def h {:x 123 :y 456})
 (h :x)
@@ -17,7 +17,7 @@ val m = Map('x' -> 123, 'y' -> 456)
 m('x') //123
 ~~~
 
-**KRISHNA** and so is list a function of its index.
+**KRISHNA** also, a list is a function of its index.
 ~~~
 val l = List("a", b", "c")
 l(1)
@@ -29,8 +29,8 @@ l(1)
 (square 4)
 ~~~
 
-**KRISHNA**  Now if I want to see what itself `square` is - I get (lambda (a1) ...).
-What this means is that `square` though a function, but it is internally implemented
+**KRISHNA**  Now if I want to see what `square` is - I get (lambda (a1) ...).
+What this means is that `square`, though a function, is internally implemented
 as a lambda - an anonymous function.
 ~~~
 square
@@ -38,7 +38,7 @@ square
 (lambda (a1) ...)
 ~~~
 
-**KRISHNA**  Lets see how can I define the same function above in terms of lambda and
+**KRISHNA**  Lets see how I can define the same function above in terms of lambda and
  then use it.
 ~~~
 (define square2 (λ (x) (* x x)))
@@ -49,7 +49,7 @@ square2
 (lambda (a1) ...)
 ~~~
 
-**BRAMHA**  This means all functions defined in library or by user are 
+**BRAMHA**  This means all functions are 
 internally implemented as lambdas and function syntax is just a syntactic sugar.  
 
 **BRAMHA** You can also def a lambda, of course, in Clojure:
@@ -66,13 +66,12 @@ internally implemented as lambdas and function syntax is just a syntactic sugar.
   (* num num))
 ~~~
 
-**BRAMHA** But this is just sugar, and there is not as much distinction between functions and values as in OO. 
-We can map lambdas to collections, 
+**BRAMHA** Under the hood there is not as much distinction between functions and lambdas as in OO. We can now map our lambda to a collection:
 ~~~
 (map square [3 2 1])
 ~~~
 
-**KRISHNA**  If you look at Scala, I can define a square method as and thats its signature.
+**KRISHNA**  If you look at Scala, I can define a square function and map over it like this:
 ~~~
 def squareMethod(x: Int) = x * x
 
@@ -105,7 +104,7 @@ square.getClass
 
 **KRISHNA** So in Scala, we can distinctly see the type form as `val` meaning 
 Function as an object and the action form as `def` meaning a method.  
-When I pass the method to like `map`, the  Scala compiler converts 
+When I pass the method to `map`, the  Scala compiler converts 
 it to the function value.  Or one could convert it like this: 
 
 ```
@@ -118,22 +117,16 @@ implementation detail surfaces up and one needs to keep this in mind.  Whereas t
 not the case with Racket, Clojure, the underlying implementation is the same and the 
 function syntax is the sugar.
 
-**KRISHNA** Somewhat similar is Groovy as well.  You can convert a method in to a
+**KRISHNA** Somewhat similar is Groovy as well.  You can convert a method into a
 closure by using the & operator.
 ```
 def square(x) { x * x }
 println(square(2))
 
 def squareClosure = { it * it }
-println(squareClosure)
-println(squareClosure(2))
 
 def squareClosure2 = this.&square
-println(squareClosure2)
-println(squareClosure2(2))
 ```
-
-**BRAMHA** Haskell is a very succint functional language, so it's worth looking at:
 
 **BRAMHA** In Haskell, a lambda looks like this:
 ~~~
@@ -141,7 +134,7 @@ println(squareClosure2(2))
 -> 4
 ~~~
 
-**BRAMHA** If I wanted to write a function:
+**BRAMHA** A function would look like this:
 ~~~
 square x = x * x
 square 3
@@ -149,3 +142,4 @@ square 3
 ~~~
 
 **KRISHNA** When exploring a language from a FP point of view, it's interesting to see how lambda is expressed - e.g. is it a first class citizen or syntactic sugar?
+Did lambda's arrive late in the language's evolution, or right from the start?
