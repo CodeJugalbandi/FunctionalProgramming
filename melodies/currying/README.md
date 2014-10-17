@@ -5,6 +5,7 @@ authorise the request..let me use Groovy now.
 
 ```
 def httpRequest1 = ['id': 1]
+
 def customer = authorizer(customerRepo, httpRequest1)
 println customer.name 
 ```
@@ -38,13 +39,12 @@ def authorizer = { CustomerRepository repository, request ->
 ```
 def custRepo = new CustomerRepository()
 
-def httpRequest1 = ['objectId': '1']
-def cust = authorizer(custRepo, httpRequest1)
-println cust.name 
- 
+def httpRequest1 = ['id': '1']
 def httpRequest2 = ['id': 2]
+
+def cust = authorizer(custRepo, httpRequest1)
+
 def cust2 = authorizer(custRepo, httpRequest2) 
-println cust2.name
 ```
 
 **BRAMHA** 
@@ -54,19 +54,12 @@ while fixing the repository? This is where i'll resort to currying the repositor
 
 ~~~
 def auth = authorizer.curry(custRepo)
-def httpRequest1 = ['id': 1]
-def cust = auth(httpRequest1)
-println cust.name
 
-def httpRequest2 = ['id': 2]
+def cust = auth(httpRequest1)
 def cust2 = auth(httpRequest2)
-println cust2.name
 ~~~
 
-**BRAMHA** So the curried function has already encapsulated the `CustomerRepository`. In 
-other words, I've re-shaped the authorizer to a single argument function from a 2-argument
-function.  On a similar lines i'll write authenticator that takes in authorizer
-as a closure and http request as a parameter and re-shape it to just accept request.
+**BRAMHA** I've re-shaped the authorizer to a single argument function from a 2-argument function.  Along similar lines I'll write an authenticator that takes in an authorizer and http-request and re-shape it to just accept request: 
 
 ~~~
 def authenticator = { repo, req ->
@@ -75,13 +68,11 @@ def authenticator = { repo, req ->
 
 def auth = authenticator.curry(authorizer.curry(custRepo))
 cust = auth(httpRequest)
-println cust.name
 ~~~
-**BRAMHA** So what we did was used currying to re-shape the functions so that
-we can chain them and the request can flow through each of them.
 
-**BRAMHA**  Let me show you some Scala code that does the same thing. 
-Bramha then opens up the scala code that was pre-written
+**BRAMHA** We used currying to re-shape the functions so that we can chain them and the request can flow through each of them.
+
+Let me show you some Scala code that does the same thing. 
 
 ~~~
   case class Customer(id: Int, name: String)
@@ -112,17 +103,21 @@ Bramha then opens up the scala code that was pre-written
   val cust = auth(httpRequest)
 ~~~
 
-**BRAMHA** If you observe the above code, unlike Groovy, I don't invoke any special method to do currying, by using multi-parameter functions, Scala gives you currying for free.  All I do here is convert the methods authorizer and authenticator to function type by partial function application using _ to give me authorize and authenticate function objects. Then I inject the repository in authorize and because of currying it then gets re-shaped into a function that goes from `Request => Option[Customer]`.  
+**BRAMHA** If you observe the above code, unlike Groovy, I don't invoke any special method to do currying, by using multi-parameter functions, Scala gives you currying for free.
+
+All I do here is convert the methods authorizer and authenticator to function type by partial function application using _ to give me authorize and authenticate function objects. 
+
+Then I inject the repository in authorize and because of currying it then gets re-shaped into a function that goes from `Request => Option[Customer]`.  
 
 Notice, because of currying the signature of the authenticate is `(Request => Option[Customer]) => (Request => Option[Customer])` and after injecting the authorize into authenticate, the signature of authenticateWithAuthorizeWithRepo function becomes `Request => Option[Customer]`
 
-**KRISHNA** This shows the difference between Currying and PFA. Currying refers to a functions that take only one arg at a time! Whereas with PFA, we are just dealing with regular functions of multiple args. You can think of a Curried function as a nest of functions: each function takes one arg, and returns a function that takes the next arg, and so on, until all the args are exhausted.
+**KRISHNA** This shows the difference between Currying and PFA. Currying refers to functions that take only one arg at a time! Whereas with PFA, we are just dealing with regular functions of multiple args. You can think of a Curried function as a nest of functions: each function takes one arg, and returning a function that takes the next arg, and so on, until all the args are exhausted.
 
 **KRISHNA** Let's look at partial function application in Clojure and start with this function of 3 args:
 
 ```
 (defn new-person [title f-name l-name]
-  {:salutation title,
+  {:title title,
    :f-name f-name,
    :l-name l-name})
 
@@ -147,7 +142,7 @@ Notice, because of currying the signature of the authenticate is `(Request => Op
 
 **KRISHNA** But this doesn’t make sense, because we somehow need to have a placeholder for the first param, which we’re not wanting to partially apply.  So, when we’re partially applying args to a function, it works from left to right. We can’t only apply the 3rd arg and not also the 1st and 2nd arg. We can wire in values for the args, from left to right.
 
-**KRISHNA** We can’t wire in only the 2nd param, but I can always achieve this with a lambda:
+We can’t wire in only the 2nd param, but I can always achieve this with a lambda:
 
 ~~~
 (def new-ada
@@ -164,15 +159,6 @@ partial function application:
   #(new-person %1 "Ada" %2))
 
 (new-ada-f "Ms" "Lovelace")
-```
-
-**KRISHNA** This "literal function" syntax is even more general than that - we can satisfy 
-as many args as we like, and leave the rest:
-
-```
-(def new-just-joe
-  #(new-person %1 "Joe" %2))
-(new-just-joe "Mrs" "Grow") 
 ```
 
 **KRISHNA** I'm sure Scala has this kind of thing too?
@@ -205,7 +191,7 @@ val fUncurried = Function.uncurried(f)
 val fCurried = fUncurried.curried
 ```
 
-**KRISHNA** In Haskell, your functions are curried by default:
+**KRISHNA** In Haskell, functions are curried by default:
 
 ```
 make_person :: String -> String -> String -> String
@@ -215,5 +201,6 @@ make_person s fname lname = s ++ fname ++ lname
 main = putStrLn (((make_person "Ms") "Ada") "Lovelace")
 ```
 
-**KRISHNA**  In a language that deals well with PFA, you won’t really miss currying, because you’ll use PFA where you would have used currying. Also, PFA is practically more powerful than currying in some ways. With currying, you have to curry strictly from left to right, 
-with PFA you can do ad-hoc application of args.
+**KRISHNA**  In a language that deals well with PFA, you won’t really miss currying, because you’ll use PFA where you would have used currying. 
+
+Also, "ad-hoc PFA" is practically more powerful than currying in some ways. With currying, you have to curry strictly from left to right, with PFA you can do ad-hoc application of args.
