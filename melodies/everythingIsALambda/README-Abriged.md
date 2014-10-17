@@ -47,33 +47,32 @@ We can map lambdas to collections,
 
 **KRISHNA**  If you look at Scala, I can define a square method as and thats its signature.
 ~~~
-scala> def squareMethod(x: Int) = x * x
+def squareMethod(x: Int) = x * x
 
-scala> squareMethod(2)
-squareMethod: (x: Int)Int
+squareMethod(2)
 
-scala> List(3, 2, 1).map(squareMethod)
+List(3, 2, 1).map(squareMethod)
 ~~~
 
 **KRISHNA** However, I can define a Function as object as well, such as square 
 ~~~
-scala> val square = (x: Int) => x * x 
+val square = (x: Int) => x * x 
 
-scala> square(2)
+square(2)
 
-scala> List(3, 2, 1).map(square)
+List(3, 2, 1).map(square)
 ~~~
 
 **KRISHNA** If I do this now
 ~~~
-scala> squareMethod.getClass
-<console>:9: error: missing arguments for method square;
+squareMethod.getClass
+error: missing arguments for method square;
 follow this method with `_' if you want to treat it as a partially applied function
               squareMethod.getClass
               ^
 
-scala> square.getClass
-res1: Class[_ <: Int => Int] = class $anonfun$1
+square.getClass
+// Class[_ <: Int => Int] = class $anonfun$1
 ~~~
 
 **KRISHNA** So in Scala, we can distinctly see the type form as `val` meaning 

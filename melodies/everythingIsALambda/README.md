@@ -3,8 +3,6 @@
 (def h {:x 123 :y 456})
 (h :x)
 -> 123
-(h :y)
--> 456
 ~~~
 
 **BRAMHA** a hash-map is a function of it’s keys. In the same way, a Vector (Array) is a function of it’s index:
@@ -17,14 +15,12 @@
 ~~~
 val m = Map('x' -> 123, 'y' -> 456)
 m('x') //123
-m('y') //456
 ~~~
 
 **KRISHNA** and so is list a function of its index.
 ~~~
 val l = List("a", b", "c")
 l(1)
-l(4)
 ~~~
 
 **KRISHNA** Hey, what about functions, how are they defined? Lets say I want to define a function to square a number.  In Dr. Racket, I can define a square function that takes in a number like this
@@ -78,33 +74,33 @@ We can map lambdas to collections,
 
 **KRISHNA**  If you look at Scala, I can define a square method as and thats its signature.
 ~~~
-scala> def squareMethod(x: Int) = x * x
+def squareMethod(x: Int) = x * x
 
-scala> squareMethod(2)
-squareMethod: (x: Int)Int
+squareMethod(2)
 
-scala> List(3, 2, 1).map(squareMethod)
+List(3, 2, 1).map(squareMethod)
 ~~~
 
 **KRISHNA** However, I can define a Function as object as well, such as square 
 ~~~
-scala> val square = (x: Int) => x * x 
+val square = (x: Int) => x * x 
 
-scala> square(2)
+square(2)
 
-scala> List(3, 2, 1).map(square)
+List(3, 2, 1).map(square)
 ~~~
 
 **KRISHNA** If I do this now
 ~~~
-scala> squareMethod.getClass
-<console>:9: error: missing arguments for method square;
+squareMethod.getClass
+
+error: missing arguments for method square;
 follow this method with `_' if you want to treat it as a partially applied function
               squareMethod.getClass
               ^
 
-scala> square.getClass
-res1: Class[_ <: Int => Int] = class $anonfun$1
+square.getClass
+// Class[_ <: Int => Int] = class $anonfun$1
 ~~~
 
 **KRISHNA** So in Scala, we can distinctly see the type form as `val` meaning 
