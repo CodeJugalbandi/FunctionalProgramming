@@ -24,8 +24,7 @@ In Clojure, "records" take care of just the structured-data containers...
 
 ### Interfaces translate to…
 
-**BRAMHA** For each shape, we want to define area + perimeter.  In Clojure, the corollary of an Interface 
-is a Protocol:
+**BRAMHA** For each shape, we want to define area + perimeter.  In Clojure, the corollary of an Interface is a Protocol:
 
 ```
 (defprotocol Shape
@@ -70,15 +69,16 @@ is a Protocol:
 **BRAMHA** By doing this, we've satisfied the first part of what is called the "Expression Problem" (Phil Wadler '98):
 
 ```
-(1) be able to create new types to implement existing interfaces
+(EP1) be able to create new types to implement existing interfaces
 This is hardly impressive, all OO languages allow you to create new classes to implement existing interfaces.
 ```
-**BRAMHA** The second part of the Expression Problem is more rare to see in languages:
+**BRAMHA** The second part of the Expression Problem, harder to achieve on some OO languages:
 
 ```
-(2) be able to implement a new interface for an existing type
+(EP2) be able to implement a new interface for an existing type
 ```
-**BRAMHA** To achieve (2) with Clojure we can do this:
+**BRAMHA** To achieve (EP2) with Clojure we can do this:
+
 ```
 (defprotocol Graphic
   (draw [this]))
@@ -88,8 +88,7 @@ This is hardly impressive, all OO languages allow you to create new classes to i
   (draw [this] (puts "***")))
 ```
 
-**BRAMHA** Moreover (1) and (2) should be possible without having to recompile the code!
-This allows for much more flexibility in working with 3rd party code that you 
+**BRAMHA** Moreover (EP1) and (EP2) should be possible without having to recompile the code! This allows for much more flexibility in working with 3rd party code that you 
 cannot recompile.
 
 ### Expression Problem - 'rows and cols' perspective
@@ -102,15 +101,12 @@ Circle          x          x
 Rect            x          x
 RightTriangle   x          x          x
 ```
-**BRAMHA** In the Expression problem, (1) is about adding rows (new types), 
-and (2) is about adding columns (new operations). FP langs tend to solve (2) 
-better than OO langs.  Dynamic languages like Ruby mitigate the expression problem 
-through "monkey patching" as they have "open classes".  Monkey Patching is 
-where you add or replace existing methods, but one would not know whether
-such method pre-existed before and there is a name clash.  The very flexibility
-that these languages offer results in uncertainty.
+**BRAMHA** (EP1) is about adding rows (new types), and (EP2) is about adding columns (new operations). In genreal terms, FP langs tend to solve (EP2) better than OO langs.  Dynamic languages like Ruby mitigate the expression problem through "monkey patching" as they have "open classes".  Monkey Patching is where you add or replace existing methods, but one would not know whether such method pre-existed before and there is a name clash.  The very flexibility that these languages offer results in uncertainty.
+
+### Expression Problem - the Scala perspective
 
 **KRISHNA** Lets try to solve the expression problem in Scala. 
+
 ~~~
 trait Shape
 case class Circle(r: Int) extends Shape
@@ -122,6 +118,7 @@ that I can perform on these shapes - area and perimeter.  If you observe this is
 a type class in scala with T as the type parameter.  I then define 2 
 implicit object implementations, one for Circle and another for Rectangle that
  do the respective calculations for area and perimeter. 
+ 
 ~~~
 trait ShapeOperations[T] {
   def area(t: T): Double
@@ -151,6 +148,7 @@ If they do pass an explicit one, then that will override the implicit values tha
 in scope.
 
 I'll just put the above to work here
+
 ~~~
 val r = Rectangle(2, 3)  
 area(r)   //6.0
@@ -165,6 +163,7 @@ perimeter(c) //12.566370614359172
 especially without modification (i.e. no recompile).  Like before, I'll
 define another typed `trait Graphics[T]` and then provide implementations 
 for Circle and Rectangle.  
+
 ~~~
 trait Graphics[T] {
   def draw(t: T): Unit
@@ -189,6 +188,7 @@ is supplied. If compiler does not find any implicit in the scope, it tries
 searching in the companion object of the type class trait and if it does not 
 find there either, it will report an error that it could not find the match 
 for that implementation of Graphics[T].  Lets put this one to work now.
+
 ~~~
 draw(c)  //Drawing Circle with 2...
 draw(r)  //Drawing Rectangle with Length = 2, Width = 3...
@@ -196,6 +196,7 @@ draw(r)  //Drawing Rectangle with Length = 2, Width = 3...
 
 **KRISHNA** Lets now add a new type.  This time i'll add RTriangle and create
 an implicit object that implements all its methods
+
 ~~~
 case class RightTriangle(b: Int, h: Int) extends Shape
 
@@ -208,6 +209,7 @@ implicit object RightTriangleOperationsAndGraphics
 ~~~
 
 **KRISHNA**  Lets put this to work now...
+
 ~~~
 val rt = RTriangle(2, 3)
 
@@ -233,35 +235,53 @@ be optional.
 **KRISHNA** Ok i see what you mean.
 
 ### The Expression Problem (Haskell)
-**BRAMHA** Let see this in Haskell, the above situation looks very close 
-to the Clojure code. First we define the data:
+**BRAMHA** Let see how Haskell addresses the Expression Problem. First, let's create our Shape (algebraic) data type, with a few sub-types:
 
 ```
-data Shape = Circle Float
-            | Rect Float Float
-            | RTriangle Float Float
-
-
-data Circle = Circle {radius :: Float}
-data Rect = Rect {width :: Float, length :: Float}
-let rect = Rect {width = 10, length = 20}
+data Shape = Circle {radius :: Float}
+           | Rect {length :: Float, width ::Float}
+           deriving Show
 ```
 
-**BRAMHA** Then the type class (protocol/interface)
+**BRAMHA** To create an area method that is polymorhic over the Shape sub-types:
 
 ```
-class Shape where
-  area :: Shape -> Float
-  perimeter :: Shape -> Float
+area :: Shape -> Float
+area (Circle r) = 3.14 * r^2
+area (Rect l w) = l * w
 ```
-Then we extend the types to implement the new typeclass
+Similarly, we could write
 
 ```
-instance Shape Circle where
-  area (Circle r) = PI * r * r
-  perim (Circle r) = 2 * PI * r
-
-instance Shape Rect where
-  area (Rect l w) = i * w
-  perim (Rect l w) = 2 * (l + w)
+perimeter :: Shape -> Float
+perimeter (Circle r) = 2 * 3.14 * r
+perimeter (Rect l w) = l + w
 ```
+**BRAMHA** By using an Algebraic type and definining functions on it, we've achieved subtype polymorphism (a simple kind of 'ad-hoc polymorhism'; in contrast to 'parametric polymorhism').
+
+(EP1) Adding a new sub-type to the Shape algebraic type would require adding a clause for the new subtype to each function I declared over the type (implying a recompile). Not very flexible. (EP2) Adding a new function acting on existing algebraic types is trivial.
+
+Instead of unifying the concepts Circle/Rect/... as the Shape abstract data type, we could use Haskell typeclasses to unify the independent algebraic types:
+(we use underscore suffix to not name clash with the above code)
+
+```
+data Circle_ = Circle_ {radius_ :: Float}
+data Rect_ = Rect_ {length_ :: Float, width_ :: Float}
+
+class Shape_ a where
+  area_ :: a -> Float
+  perimeter_ :: a -> Float
+
+instance Shape_ Circle_ where
+  area_         (Circle_ r)  = pi * r^2
+  perimeter_    (Circle_ r) = 2 * pi * r
+
+instance Shape_ Rect_ where
+  area_          (Rect_ l w)  = l * w
+  perimeter_     (Rect_ l w) =  2 * (l + w)
+```
+
+**BRAMHA** With typeclasses, adding a new data type and implementing Shape is easy (EP1). 
+Adding a new typeclass for an existing type is nice and simple too (EP2).
+
+Clojure protocols have been influenced by Haskell typeclasses. Both Clojure and Haskell fare well with 'solving' the Expression Problem, albeit in their own unique ways.
