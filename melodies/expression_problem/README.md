@@ -105,43 +105,42 @@ RightTriangle   x          x          x
 
 ### Expression Problem - the Scala perspective
 
-**KRISHNA** Lets try to solve the expression problem in Scala. 
+**KRISHNA** Lets try to solve the expression problem in Scala. I have 2 data
+classes, one for Circle and another for Rectangle
 
 ~~~
-trait Shape
-case class Circle(r: Int) extends Shape
-case class Rectangle(l: Int, w: Int) extends Shape
+case class Circle(r: Int)
+case class Rectangle(l: Int, w: Int)
 ~~~
 
-**KRISHNA** Now , let me define set of operations using `trait ShapeOperations[T]`
+**KRISHNA** Now , let me define set of operations using `trait Shape[T]`
 that I can perform on these shapes - area and perimeter.  If you observe this is
 a type class in scala with T as the type parameter.  I then define 2 
 implicit object implementations, one for Circle and another for Rectangle that
  do the respective calculations for area and perimeter. 
  
 ~~~
-trait ShapeOperations[T] {
+trait Shape[T] {
   def area(t: T): Double
   def perimeter(t: T): Double
 }
 
-implicit object CircleOperations extends ShapeOperations[Circle] {
+implicit object CircleOperations extends Shape[Circle] {
   def area(c: Circle): Double = Math.PI * c.r * c.r
   def perimeter(c: Circle): Double = 2 * Math.PI * c.r
 }
 
-implicit object RectangleOperations extends ShapeOperations[Rectangle] {
+implicit object RectangleOperations extends Shape[Rectangle] {
   def area(r: Rectangle): Double = r.l * r.w
   def perimeter(r: Rectangle): Double = 2 * (r.l + r.w)
 }
 
-def area[T](t: T)(implicit o: ShapeOperations[T]): Double = o.area(t)
-def perimeter[T](t: T)(implicit o: ShapeOperations[T]): Double = o.perimeter(t)
+def area[T](t: T)(implicit s: Shape[T]): Double = s.area(t)
+def perimeter[T](t: T)(implicit s: Shape[T]): Double = s.perimeter(t)
 ~~~
 
 **KRISHNA**  Finally, I define 2 methods area and perimeter in terms of operations 
-defined on type classes and these methods have no knowledge of what the `OperationsFor[Shape]`
-are defined.  Also, the parameter `o` is passed as `implicit` so that the compiler can
+defined on type class `Shape`.  Also, the parameter `s` is passed as `implicit` so that the compiler can
 pick up the appropriate value of `implicit object` in the current scope for that 
 type of `T` if its defined.  However, this does not mean that users cannot pass explicit operations.
 If they do pass an explicit one, then that will override the implicit values that are
@@ -170,11 +169,11 @@ trait Graphics[T] {
 }
 
 implicit object CircleGraphics extends Graphics[Circle] {
-  def draw(c: Circle) = println(s"Drawing Circle with ${c.r}...")
+  def draw(c: Circle) = println("O")
 }
 
 implicit object RectangleGraphics extends Graphics[Rectangle] {
-  def draw(r: Rectangle) = println(s"Drawing Rectangle with Length = ${r.l}, Width = ${r.w}...")
+  def draw(r: Rectangle) = println("[R]")
 }
 
 def draw[T](t: T)(implicit g: Graphics[T]) = g.draw(t)
@@ -190,32 +189,32 @@ find there either, it will report an error that it could not find the match
 for that implementation of Graphics[T].  Lets put this one to work now.
 
 ~~~
-draw(c)  //Drawing Circle with 2...
-draw(r)  //Drawing Rectangle with Length = 2, Width = 3...
+draw(c)  //O
+draw(r)  //[R]
 ~~~
 
 **KRISHNA** Lets now add a new type.  This time i'll add RTriangle and create
 an implicit object that implements all its methods
 
 ~~~
-case class RightTriangle(b: Int, h: Int) extends Shape
+case class RightTriangle(b: Int, h: Int)
 
 implicit object RightTriangleOperationsAndGraphics 
-  extends ShapeOperations[RightTriangle] with Graphics[RTriangle] {
+  extends Shape[RightTriangle] with Graphics[RTriangle] {
     def area(rt: RightTriangle) = 0.5 * rt.b * rt.h
     def perimeter(rt: RightTriangle) = rt.b + rt.h + (Math.sqrt(rt.b * rt.b + rt.h * rt.h))
-    def draw(rt: RightTriangle) = println(s"Drawing RTriangle with Breadth = ${rt.b} and Height = ${rt.h}...")
+    def draw(rt: RightTriangle) = println(rt)
 }
 ~~~
 
 **KRISHNA**  Lets put this to work now...
 
 ~~~
-val rt = RTriangle(2, 3)
+val rt = RightTriangle(2, 3)
 
 area(rt)      //3.0
 perimeter(rt) //8.60555127546399
-draw(rt)      //Drawing RTriangle with Breadth = 2 and Height = 3...
+draw(rt)      //RightTriangle(2, 3)
 ~~~
 
 **KRISHNA** So this is how using type classes in Scala and using Generics in Java

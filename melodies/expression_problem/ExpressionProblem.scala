@@ -1,6 +1,5 @@
-trait Shape
-case class Circle(r: Int) extends Shape
-case class Rectangle(l: Int, w: Int) extends Shape
+case class Circle(r: Int)
+case class Rectangle(l: Int, w: Int)
 
 trait ShapeOperations[T] {
   def area(t: T): Double
@@ -48,7 +47,7 @@ def draw[T](t: T)(implicit g: Graphics[T]) = g.draw(t)
 draw(c)
 draw(r)
 
-case class RTriangle(b: Int, h: Int) extends Shape
+case class RTriangle(b: Int, h: Int)
 
 implicit object RTriangleOperationsAndGraphics extends ShapeOperations[RTriangle] with Graphics[RTriangle] {
   def area(rt: RTriangle) = 0.5 * rt.b * rt.h

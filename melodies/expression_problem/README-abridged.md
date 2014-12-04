@@ -144,11 +144,11 @@ trait Graphics[T] {
 }
 
 implicit object CircleGraphics extends Graphics[Circle] {
-  def draw(c: Circle) = println(s"Drawing Circle with ${c.r}...")
+  def draw(c: Circle) = println("O")
 }
 
 implicit object RectangleGraphics extends Graphics[Rectangle] {
-  def draw(r: Rectangle) = println(s"Drawing Rectangle with Length = ${r.l}, Width = ${r.w}...")
+  def draw(r: Rectangle) = println("[R]")
 }
 
 def draw[T](t: T)(implicit g: Graphics[T]) = g.draw(t)
