@@ -6,6 +6,11 @@
 
 (define s "All mimsy were the borogoves")
 
+(string-join
+  (map (λ (w) (string-upcase w))
+    (filter (λ (w) (<= (string-length w) 3)) 
+      (string-split s))))
+
 (define (capitalize s) (map (λ (w) (string-upcase w)) s))
 (define (words<=3 s) (filter (λ (w) (<= (string-length w) 3)) s))
 (define (sentence->words s) (string-split s)) 
@@ -25,5 +30,6 @@
 (require rackjure/threading)
 
 ; Flows with the grain of thought
+; Concatenative Programming
 (~> s sentence->words words<=3 capitalize join-words)
 
