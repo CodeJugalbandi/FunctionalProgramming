@@ -109,3 +109,5 @@ have the cake and eat it too. I can make use of Scala's `andThen`
 **KRISHNA** This style is also known as concatenative programming where function composition is the default way to build subroutines. Functions written in concatenative style neither represent argument types nor the names or identifiers they work with; instead they are just function names laid out as a pipeline, in such a way that the output type of one function aligns with the input type of the next function in the sequence. Thus, the order of function application gets transformed into order of function composition. 
 
 **BRAMHA** One of the immediate benefits of this style is that it makes the implementation very succinct, thus very helpful in reasoning about the program.  Secondly, these small referentially transparent functions can be refactored away into a new sub-sequence, thus improving the understanding of the domain.
+
+**KRISHNA** In a nutshell, its a sequence of transformations that are used for processing data.
