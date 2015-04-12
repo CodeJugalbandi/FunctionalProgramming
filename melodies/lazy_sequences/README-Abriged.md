@@ -87,21 +87,21 @@ sequence ops. Same thing in Haskell: the default behaviour for lists is lazy
 (in Haskell, this is true for **all** evaluation!)
 
 ### Lazy List in Scala
-**KRISHNA** In Scala, a list whose tail is evaluated only on a pull, that is, lazily, is a Stream.
-It is a recursive structure like list.  Here is how you construct one.
+**KRISHNA** In Scala, a list whose tail is evaluated only on a pull, that is, lazily, is a Stream.  It is a recursive structure like list.  Here is how you construct one.
+
 ```
 val s1 = Stream(1, 2, 3) 
 ```
 
-**KRISHNA** The operational behavior of Stream is different from that of a list, like you said, the
-head is realized, whereas the tail is only evaluated on pull.  The '?' mark stands for unevaluated 
-stream.  So these are all partially constructed streams until materialized.
+**KRISHNA** The operational behavior of Stream is different from that of a list, like you said, the head is realized, whereas the tail is only evaluated on pull.  The '?' mark stands for unevaluated stream.  So these are all partially constructed streams until materialized.
+
 ```
 s1.head //1
 s1.tail //Stream(2, ?)
 ```
 
 **KRISHNA** You can also force the entire stream to materialize by calling a `toList` on it.
+
 ```
 s1.toList
 ```
@@ -121,6 +121,7 @@ sequencing, we looked at pipelines of functions like this:
 ```              
 **BRAMHA** Let's go into how this pipeline might be  evaluated...
 **BRAMHA** If we take an "eager" approach to evaluation, it would look like this:
+
 ```
 (range 1 1000) -> (1 2 3 ... 1000)
 (map (* 2))    -> (2 4 6 8 ... 2000)
@@ -129,6 +130,7 @@ sequencing, we looked at pipelines of functions like this:
 **BRAMHA** ... all of each list must be held in memory at a time.
 
 **BRAMHA**  In the case of Lazy sequences:
+
 ```
 (range 1 1000)
 ;;  (lazy-cons 1 (fn [] (range 2 1000)))
@@ -144,19 +146,18 @@ sequencing, we looked at pipelines of functions like this:
 this Lazy way: range returns a "Lazy seq", map and filter operate on and 
 return lazy seqs.
 
-**KRISHNA** You can transform the elements of a Stream using `map`, but the transformation won't happen
-until evaluated.
+**KRISHNA** You can transform the elements of a Stream using `map`, but the transformation won't happen until evaluated.
+
 ```
 val s4 = s1.map(_ * 2)
 s4.take(2).toList  //List(1, 4)
 ```
 
-**KRISHNA** The virtue in being lazy is that - we not only allocate the space required, but also
-can delay the computation until the demand is placed. Another name for lazy or pull-based collections 
-is "non-strict" collections as opposed to "strict" or eager collections. 
+**KRISHNA** The virtue in being lazy is that - we not only allocate the space required, but also can delay the computation until the demand is placed. Another name for lazy or pull-based collections is "non-strict" collections as opposed to "strict" or eager collections. 
 
 ### Lazy sequencing In Scala
 **KRISHNA** Let's now see lazy sequencing in Scala.
+
 ```
 val l = List(1 to 10: _*).map { n => 
        println(s"mapping $n") 
@@ -167,6 +168,7 @@ val l = List(1 to 10: _*).map { n =>
     }
 ``` 
 **KRISHNA** Now with Streams...
+
 ```
 val s = Stream(1 to 10:  _*).map { n => 
        println(s"mapping $n") 
