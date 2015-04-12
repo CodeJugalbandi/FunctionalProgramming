@@ -31,6 +31,7 @@ end.join ("\n")
 This style is called `sequencing`, where we're moving data down processing pipelines. 
 
 **BRAMHA** In Clojure, we could chain functions together through just function nesting: 
+
 ```
 (def words "all mimsy were the borogoves")
 (def using-nesting
@@ -40,6 +41,7 @@ This style is called `sequencing`, where we're moving data down processing pipel
                      (split words #"\s")))))
 (println using-nesting)
 ```
+
 **BRAMHA** This is hard to understand. Deep nesting leads to many parentheses in Clojure: considered a code smell in Clojure. Let's try and lose a few parens through function composition:
 
 ```
@@ -70,6 +72,7 @@ back to front. The `arrow` syntax sidesteps composition in lieu of a threading-m
 **BRAMHA** The word 'threading' is used in the sense of threading a needle through cloth, not to be confused with process threads! Since it is implemented as a macro, is is called a threading-macro.
 
 **KRISHNA** Lets see that how can we achieve the same in Scala. I'll first show using chaining...
+
 ```
 val words = "all mimsy were the borogoves"
 
@@ -99,10 +102,11 @@ println(words
 
 **KRISHNA** Just like in your clojure nesting and composition examples, this is flowing against the grain of thought.  Let me
 have the cake and eat it too. I can make use of Scala's `andThen`
-~~~
+
+```
   val splitCapitalizeFilterAndJoin2 = split andThen capitalize andThen filter andThen join
   splitCapitalizeFilterAndJoin2 (words)
-~~~
+```
 
 **BRAHMA** In whatever functional programming language you're using, if you find yourself deeply nesting functions, you can be sure there is a better way of "threading" functions together. Moreover, if you are going against the "grain of thought", look for a way in the language to go with the grain!
 
