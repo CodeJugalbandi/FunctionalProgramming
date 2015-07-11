@@ -16,7 +16,6 @@ class Stream<T> {
       throw new Exception('Head of Empty Stream!')
     return _head
   }
-  
   def tail() {
     if(isEmpty())
       throw new Exception('Tail of Empty Stream!')
@@ -26,17 +25,20 @@ class Stream<T> {
     if(isEmpty()) '[]'
     else "[${head()}, ?]"
   }
-  def leftShift(element) {
+  //append element to stream
+  def leftShift(T element) {
     new Stream(element, {this})
   }
-  @TailRecursive  
-  def fold(Stream<T> stream = this, acc, Closure fn) {
+  //concat with other
+  def leftShift(Stream<?> other) {
+    if (isEmpty()) other
+    else new Stream(head(), {-> tail() << other})
+  }  
+  @TailRecursive def fold(Stream<T> stream = this, acc, Closure fn) {
     if(stream.isEmpty()) acc
     else fold(stream.tail(), fn(acc, stream.head()), fn)
-  }   
-  
-  @TailRecursive  
-  def foldN(Stream<T> stream = this, howMany, acc, Closure fn) {
+  }     
+  @TailRecursive def foldN(Stream<T> stream = this, howMany, acc, Closure fn) {
     if(stream.isEmpty() || howMany <= 0) acc
     else foldN(stream.tail(), howMany - 1, fn(acc, stream.head()), fn)
   }   
@@ -51,13 +53,27 @@ class Stream<T> {
     list[index]
   }
   static def from(n) {
-    new Stream(n, { from(n + 1) })
+    iterate(n) { it + 1 }
+  } 
+  static def iterate(initial, Closure fn) {
+    new Stream(initial, {-> iterate(fn(initial), fn) })
+  }  
+  static def of(T ...ts) {
+    def stream = Stream.Empty
+    ts.reverseEach { 
+      stream = stream << it
+    }
+    stream
   }
-  
+  static def generate(Closure fn) {
+    new Stream(fn(), {-> generate(fn)})
+  }
+  static def range(Range range, int step = 1) {
+    Stream.of(*range.step(step))
+  }
   def drop(howMany) {
     foldN(howMany, this) { stream, elem -> stream.tail() }
   }
-  
   def take(howMany) {
     if (isEmpty() || howMany <= 0) Stream.Empty
     else new Stream(head(), {-> tail().take(howMany - 1)})
@@ -78,7 +94,6 @@ class Stream<T> {
     else 
       this
   }
-  
   def force() {
     fold([]) { acc, elem -> acc << elem }
   }
@@ -88,13 +103,15 @@ class Stream<T> {
       new Stream(head(), {-> tail().filter(predicate) })
     else
       tail().filter(predicate)
-  }
-  
+  } 
   def map(Closure fn) {
     if (isEmpty()) Stream.Empty
     else new Stream(fn(head()), {-> tail().map(fn) })
+  } 
+  def flatMap(Closure fn) {
+    if (isEmpty()) Stream.Empty
+    else fn(head()) << tail().flatMap(fn)
   }
-  
   def collect(Closure predicate) {
     if (isEmpty()) 
       Stream.Empty
@@ -102,8 +119,7 @@ class Stream<T> {
       new Stream(predicate(head()), {-> tail().collect(predicate)})
     else
       tail().collect(predicate)
-  }
-  
+  } 
   def each(Closure fn) {
     if (isEmpty()) 
       Stream.Empty
@@ -112,18 +128,15 @@ class Stream<T> {
       tail().each(fn)
     }
   }
-  
-  def zip(Stream<T> that) {
+  def zip(Stream<?> that) {
     if (isEmpty() || that.isEmpty()) 
       Stream.Empty
     else
       new Stream(new Tuple(head(), that.head()), {-> tail().zip(that.tail()) })
   } 
- 
   def zipWithIndex() {
     zip(from(0))
   }
-  
   def split(Closure predicate) {
     fold([Stream.Empty, Stream.Empty]) { streams, elem -> 
        def (yays, nays) = streams
@@ -131,14 +144,14 @@ class Stream<T> {
        else [yays, nays << elem] 
     }  
   }
-  
 }
 
 def empty = Stream.Empty
 println empty.takeWhile { it == 1 }
 println empty.dropWhile { it == 1 }
 
-def stream = empty << 2 << 1 << 2 << 1 << 1 << 1
+/*def stream = empty << 2 << 1 << 2 << 1 << 1 << 1*/
+def stream = Stream.of(1, 1, 1, 2, 1, 2)
 println "Stream = ${stream}"
 println "Stream Force = ${stream.force()}"
 println "Stream Take 3 force = ${stream.take(3).force()}"
@@ -157,8 +170,8 @@ println "Stream collect squaredEvens = ${squaredEvens.force()}"
 stream.each { print it }
 println ""
 
-def s1 = Stream.Empty << 0 << 1 << 2
-def s2 = Stream.Empty << 4 << 5 << 6
+def s1 = Stream.of(2, 1, 0)
+def s2 = Stream.of(6, 5, 4)
 def zipped = s1.zip(s2)
 println "Zipped Stream = ${zipped.force()}"  // [2, 6, 1, 5, 0, 4]
 println "Collated Zipped Stream = ${zipped.force().collate(2)}" // [[2, 6], [1, 5], [0,4]]
@@ -200,3 +213,43 @@ println s.force() // [0, 1]
 // Start with seed elements 0 and 1
 println fibonacci(s).take(10).force()
 // [0, 1, 1, 2, 3, 5, 8, 13, 21, 34]
+// 
+Stream xs = Stream.of(1, 2)
+Stream cs = Stream.of('a', 'b')
+
+println ((xs << cs).force())
+println xs.flatMap { i -> cs }.force()
+
+def n = 10
+println Stream.from(1).take(n).flatMap { i ->
+  Stream.from(1).take(n).flatMap { j ->
+    Stream.from(1).take(n).map { k ->
+        [i, j, k]
+    }.filter { triplet ->
+      def (x, y, z) = triplet
+      x*x + y*y == z*z
+    }
+  }
+}.force()
+
+println xs.flatMap { x -> 
+           cs.map { c ->
+             [c, x]
+           } 
+         }.force()
+
+println "Naturals = " + Stream.iterate(0) { it + 1 }.take(3).force()
+println "Fibonacci = " + Stream.iterate([0, 1]) { 
+  def (first, second) = it
+  [second, first + second]
+}.map{ 
+  def (first, second) = it
+  first
+}.take(10).force()
+
+def rnd = new java.util.Random()
+println "Generating random stream = " + Stream.generate{ rnd.nextInt(10) }.take(10).force()
+println Stream.range('a'..'z').force()
+println Stream.range('A'..'Z', 2).force()
+println Stream.range(-10..5, 4).force()
+println Stream.range(new Date("12-Dec-2012")..new Date("19-Jan-2013"), 8)
