@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 sealed public class Stream<T> {
   public static readonly Stream<T> Empty = new Stream<T>(default(T), null);
   private readonly T head;
@@ -158,151 +159,172 @@ sealed public class Stream<T> {
     return Split0(Stream<T>.Empty, Stream<T>.Empty, this);
   }
   
+  public List<T> ToList() {
+    var result = new List<T>();
+    ForEach(result.Add);
+    return result;
+  }
+  
   public override string ToString() {
     if (IsEmpty) 
       return "Empty";
-    else 
-      return $"Stream<{typeof(T)}>({head}, ?)";
+    return $"Stream<{typeof(T)}>({head}, ?)";
   }
 }
 
 class Test {
+  public static Stream<int> Sieve(Stream<int> s) {
+    var first = s.Head;
+    var rest = s.Tail.Where(n => n % first != 0);
+    return new Stream<int>(first, new Lazy<Stream<int>>(() => rest));
+  }
+  
+  public static Stream<int> From(int start) => Stream<int>.Iterate(start, x => x + 1);
+    
+  public static Stream<int> Fibonacci(Stream<int> s) {
+    var next = s.Zip(s.Tail).Select(tuple => {
+      var (first, second) = tuple;
+      return first + second;
+    });
+    return new Stream<int>(s.Head, new Lazy<Stream<int>>(() => Fibonacci(s + next.Head)));
+  }
+  
   public static void Main(string[] args) {
     // var empty = new Stream<int>(0, null);
-    // var empty = Stream<int>.Empty;
-    // Console.WriteLine(empty);      // Empty
+    var empty = Stream<int>.Empty;
+    Console.WriteLine(empty);      // Empty
     // Console.WriteLine(empty.Head); // Boom
     // Console.WriteLine(empty.Tail); // Boom
-    // Console.WriteLine(empty.IsEmpty);
-    // empty.ForEach(Console.WriteLine);
+    Console.WriteLine(empty.IsEmpty);
+    empty.ForEach(Console.WriteLine);
     
-    // var stream = new Stream<int>(2, new Lazy<Stream<int>>(new Stream<int>(1, new Lazy<Stream<int>>(() => empty))));
-    // Console.WriteLine(stream);            // Stream(2, ?)
-    // Console.WriteLine(stream.Head);       // 2
-    // Console.WriteLine(stream.Tail);       // Stream(1, ?)
-    // Console.WriteLine(stream.Tail.Tail);  // Stream(0, ?)
+    var stream = new Stream<int>(2, new Lazy<Stream<int>>(new Stream<int>(1, new Lazy<Stream<int>>(() => empty))));
+    Console.WriteLine(stream);            // Stream(2, ?)
+    Console.WriteLine(stream.Head);       // 2
+    Console.WriteLine(stream.Tail);       // Stream(1, ?)
+    Console.WriteLine(stream.Tail.Tail);  // Stream(0, ?)
     // Console.WriteLine(stream.Tail.Tail.Tail); // Boom
-    // Console.WriteLine(stream.IsEmpty);
-    // stream.ForEach(Console.WriteLine);
+    Console.WriteLine(stream.IsEmpty);
+    stream.ForEach(Console.WriteLine);
     
-    // // Prepend Operator +
-    // var stream = empty + 1 + 2;
-    // Console.WriteLine(stream);            // Stream(2, ?)
-    // Console.WriteLine(stream.Head);       // 2
-    // Console.WriteLine(stream.Tail);       // Stream(1, ?)
-    // Console.WriteLine(stream.Tail.Tail);  // Stream(0, ?)
+    // Prepend Operator +
+    var stream1 = empty + 1 + 2;
+    Console.WriteLine(stream1);            // Stream(2, ?)
+    Console.WriteLine(stream1.Head);       // 2
+    Console.WriteLine(stream1.Tail);       // Stream(1, ?)
+    Console.WriteLine(stream1.Tail.Tail);  // Stream(0, ?)
 
-    // // Append Operator +    
+    // Append Operator +
     // var stream2 = 1 + Stream<int>.Empty;
     // stream2.ForEach(Console.WriteLine); // 1
-    // var stream2 = 1 + (2 + (3 + (4 + Stream<int>.Empty)));
-    // stream2.ForEach(Console.WriteLine); // 1 2 3 4
+    var stream2 = 1 + (2 + (3 + (4 + Stream<int>.Empty)));
+    stream2.ForEach(Console.WriteLine); // 1 2 3 4
     
     // Create Stream using - Of
-    // Stream<int>.Of(1, 2, 3, 4).ForEach(Console.WriteLine);
-    // Stream<int>.Of<int>().ForEach(Console.WriteLine);         // Prints Nothing
+    Stream<int>.Of(1, 2, 3, 4).ForEach(Console.WriteLine);
+    Stream<int>.Of<int>().ForEach(Console.WriteLine);         // Prints Nothing
     
     // Concat Operator +
-    // var concat1 = Stream<char>.Empty + Stream<char>.Of('a', 'b');
-    // concat1.ForEach(Console.Write); // ab
-    // Console.WriteLine();
-    // var concat2 = Stream<char>.Of('a', 'b') + Stream<char>.Empty;
-    // concat2.ForEach(Console.Write); // ab
-    // Console.WriteLine();
-    // var concat3 = Stream<char>.Of('a', 'b') + Stream<char>.Of('c', 'd', 'e');
-    // concat3.ForEach(Console.Write); // abcde
-    // Console.WriteLine();
+    var concat1 = Stream<char>.Empty + Stream<char>.Of('a', 'b');
+    concat1.ForEach(Console.Write); // ab
+    Console.WriteLine();
+    var concat2 = Stream<char>.Of('a', 'b') + Stream<char>.Empty;
+    concat2.ForEach(Console.Write); // ab
+    Console.WriteLine();
+    var concat3 = Stream<char>.Of('a', 'b') + Stream<char>.Of('c', 'd', 'e');
+    concat3.ForEach(Console.Write); // abcde
+    Console.WriteLine();
 
     // Take 
-    // Stream<int>.Empty.Take(2).ForEach(Console.WriteLine);           // Prints Nothing
-    // Stream<int>.Of(1, 2, 3, 4).Take(2).ForEach(Console.WriteLine);  // 1 2
-    // Stream<int>.Of(1, 2, 3, 4).Take(12).ForEach(Console.WriteLine); // 1 2 3 4
-    // Stream<int>.Of(1, 2, 3, 4).Take(0).ForEach(Console.WriteLine);  // Prints Nothing
+    Stream<int>.Empty.Take(2).ForEach(Console.WriteLine);           // Prints Nothing
+    Stream<int>.Of(1, 2, 3, 4).Take(2).ForEach(Console.WriteLine);  // 1 2
+    Stream<int>.Of(1, 2, 3, 4).Take(12).ForEach(Console.WriteLine); // 1 2 3 4
+    Stream<int>.Of(1, 2, 3, 4).Take(0).ForEach(Console.WriteLine);  // Prints Nothing
 
     // Drop
-    // Stream<int>.Empty.Drop(2).ForEach(Console.WriteLine);           // Prints Nothing
-    // Stream<int>.Of(1, 2, 3, 4).Drop(2).ForEach(Console.WriteLine);  // 3 4
-    // Stream<int>.Of(1, 2, 3, 4).Drop(20).ForEach(Console.WriteLine); // Prints Nothing
-    // Stream<int>.Of(1, 2, 3, 4).Drop(0).ForEach(Console.WriteLine);  // 1 2 3 4
+    Stream<int>.Empty.Drop(2).ForEach(Console.WriteLine);           // Prints Nothing
+    Stream<int>.Of(1, 2, 3, 4).Drop(2).ForEach(Console.WriteLine);  // 3 4
+    Stream<int>.Of(1, 2, 3, 4).Drop(20).ForEach(Console.WriteLine); // Prints Nothing
+    Stream<int>.Of(1, 2, 3, 4).Drop(0).ForEach(Console.WriteLine);  // 1 2 3 4
 
     // Generate
-    // var random = new Random();
-    // Stream<int>.Generate(() => random.Next(100, 150)).Take(4).ForEach(Console.WriteLine);
+    var random = new Random();
+    Stream<int>.Generate(() => random.Next(100, 150)).Take(4).ForEach(Console.WriteLine);
 
     // Iterate
-    // Stream<int>.Iterate(9, x => x + 2).Take(4).ForEach(Console.WriteLine); // 9 11 13 15
+    Stream<int>.Iterate(9, x => x + 2).Take(4).ForEach(Console.WriteLine); // 9 11 13 15
 
     // Transform each element.
-    // Console.WriteLine(empty.Select(x => x * x));
-    // stream.Select(x => x * x).ForEach(Console.WriteLine); // 1 4
+    Console.WriteLine(empty.Select(x => x * x));
+    stream.Select(x => x * x).ForEach(Console.WriteLine); // 1 4
     
     // Select using Predicate
-    // stream.Where(x => x % 2 == 0).ForEach(Console.WriteLine);  // 1
-    // Console.WriteLine(empty.Where(x => x < 2));
+    stream.Where(x => x % 2 == 0).ForEach(Console.WriteLine);  // 1
+    Console.WriteLine(empty.Where(x => x < 2));
     
     // SelectMany (flatMap)
-    // Stream<char>.Of('a', 'b')
-    //   .SelectMany(c => Stream<int>.Of(1, 2).Select(n => (c, n)))
-    //   .ForEach(t => Console.Write(t));  // (a, 1)(a, 2)(b, 1)(b, 2)
-    // Console.WriteLine();
-    //
-    // Stream<int>.Empty.SelectMany(c => Stream<int>.Of(1, 2).Select(n => (c, n)))
-    //   .ForEach(t => Console.Write(t));  // Prints Nothing
-    // Console.WriteLine();
+    Stream<char>.Of('a', 'b')
+      .SelectMany(c => Stream<int>.Of(1, 2).Select(n => (c, n)))
+      .ForEach(t => Console.Write(t));  // (a, 1)(a, 2)(b, 1)(b, 2)
+    Console.WriteLine();
+
+    Stream<int>.Empty.SelectMany(c => Stream<int>.Of(1, 2).Select(n => (c, n)))
+      .ForEach(t => Console.Write(t));  // Prints Nothing
+    Console.WriteLine();
 
     // Reverse
-    // Stream<char>.Of('a', 'b', 'c').Reverse().ForEach(Console.Write); // cba
-    // Console.WriteLine();
-    // Stream<int>.Empty.Reverse().ForEach(Console.WriteLine); // Prints Nothing
+    Stream<char>.Of('a', 'b', 'c').Reverse().ForEach(Console.Write); // cba
+    Console.WriteLine();
+    Stream<int>.Empty.Reverse().ForEach(Console.WriteLine); // Prints Nothing
     
-    // // TakeWhile
-    // Stream<char>.Of('a', 'a', 'b', 'c')
-    //   .TakeWhile(c => c == 'a')
-    //   .ForEach(Console.Write); // aa
-    // Console.WriteLine();
-    //
-    // Stream<char>.Of('a', 'a', 'b', 'c')
-    //   .TakeWhile(c => c == 'b')
-    //   .ForEach(Console.Write); // Prints Nothing
-    // Console.WriteLine();
+    // TakeWhile
+    Stream<char>.Of('a', 'a', 'b', 'c')
+      .TakeWhile(c => c == 'a')
+      .ForEach(Console.Write); // aa
+    Console.WriteLine();
+
+    Stream<char>.Of('a', 'a', 'b', 'c')
+      .TakeWhile(c => c == 'b')
+      .ForEach(Console.Write); // Prints Nothing
+    Console.WriteLine();
 
     // DropWhile    
-    // Stream<char>.Of('a', 'a', 'b', 'c')
-    //   .DropWhile(c => c == 'a')
-    //   .ForEach(Console.Write); // bc
-    // Console.WriteLine();
-    //
-    // Stream<char>.Of('a', 'a', 'b', 'c')
-    //   .DropWhile(c => c == 'b')
-    //   .ForEach(Console.Write); // aabc
-    // Console.WriteLine();
+    Stream<char>.Of('a', 'a', 'b', 'c')
+      .DropWhile(c => c == 'a')
+      .ForEach(Console.Write); // bc
+    Console.WriteLine();
+
+    Stream<char>.Of('a', 'a', 'b', 'c')
+      .DropWhile(c => c == 'b')
+      .ForEach(Console.Write); // aabc
+    Console.WriteLine();
     
-    // // Zip
-    // Stream<char>.Of('a', 'b').Zip(Stream<int>.Of(1, 2))
-    //   .ForEach(t => Console.Write(t)); // (a, 1)(b, 2)
-    // Console.WriteLine();
-    //
-    // Stream<char>.Of('a', 'b').Zip(Stream<int>.Empty)
-    //   .ForEach(t => Console.Write(t)); // Prints Nothing
-    // Console.WriteLine();
-    //
-    // Stream<int>.Empty.Zip(Stream<char>.Of('a', 'b'))
-    //   .ForEach(t => Console.Write(t)); // Prints Nothing
-    // Console.WriteLine();
-    //
-    // // ZipWith
-    // var numbers = Stream<int>.Of(1, 2, 3);
-    // numbers.ZipWith(numbers, (n1, n2) => n1 * n2)
-    //   .ForEach(Console.WriteLine); // 1 4 9
-    // Console.WriteLine();
-    //
-    // numbers.ZipWith(Stream<int>.Empty, (n1, n2) => n1 * n2)
-    //   .ForEach(Console.WriteLine); // Prints Nothing
-    // Console.WriteLine();
-    //
-    // Stream<int>.Empty.ZipWith(numbers, (n1, n2) => n1 * n2)
-    //   .ForEach(Console.WriteLine); // Prints Nothing
-    // Console.WriteLine();
+    // Zip
+    Stream<char>.Of('a', 'b').Zip(Stream<int>.Of(1, 2))
+      .ForEach(t => Console.Write(t)); // (a, 1)(b, 2)
+    Console.WriteLine();
+
+    Stream<char>.Of('a', 'b').Zip(Stream<int>.Empty)
+      .ForEach(t => Console.Write(t)); // Prints Nothing
+    Console.WriteLine();
+
+    Stream<int>.Empty.Zip(Stream<char>.Of('a', 'b'))
+      .ForEach(t => Console.Write(t)); // Prints Nothing
+    Console.WriteLine();
+
+    // ZipWith
+    var numbers = Stream<int>.Of(1, 2, 3);
+    numbers.ZipWith(numbers, (n1, n2) => n1 * n2)
+      .ForEach(Console.WriteLine); // 1 4 9
+    Console.WriteLine();
+
+    numbers.ZipWith(Stream<int>.Empty, (n1, n2) => n1 * n2)
+      .ForEach(Console.WriteLine); // Prints Nothing
+    Console.WriteLine();
+
+    Stream<int>.Empty.ZipWith(numbers, (n1, n2) => n1 * n2)
+      .ForEach(Console.WriteLine); // Prints Nothing
+    Console.WriteLine();
 
     // Split
     var (evens, odds) = Stream<int>.Iterate(0, x => x + 1).Take(10).Split(x => x % 2 == 0);
@@ -310,7 +332,49 @@ class Test {
     Console.WriteLine();
     odds.ForEach(Console.Write);  // 13579
     Console.WriteLine();
+ 
+    // ToList
+    var list = Stream<int>.Iterate(1, x => x + 1).Take(4).ToList();
+    foreach (var item in list) {
+      Console.WriteLine(item);
+    }
     
+    // Sieve
+    Console.WriteLine("Sieve...");
+    Sieve(From(2)).Take(6).ForEach(Console.Write);
+    Console.WriteLine();
+    
+    // Fibonacci
+    Console.WriteLine("Fibonacci...");
+    var seed = From(0).Take(2);
+    // Start with seed elements 0 and 1
+    Fibonacci(seed)
+      .Take(6)
+      .ForEach(Console.WriteLine);
+    
+    Console.WriteLine("Fibonacci...using Iterate");
+    Stream<int>.Iterate((0, 1), tuple => {
+      var (first, second) = tuple;
+      var next = first + second;
+      return (second, next);
+    })
+    .Select(tuple => {
+      var (fst, snd) = tuple;
+      return fst;
+    })
+    .Take(6)
+    .ForEach(Console.WriteLine);
+    
+    var sentence = "All...";
+    var indexed = Stream<int>.Iterate(0, x => x + 1)
+      .Take(sentence.Length)
+      .Select(n => (sentence[n], n))
+      .ToList();
+    
+    foreach (var item in indexed) {
+      Console.WriteLine(item);
+    }
+    // Console.WriteLine(indexed);
     Console.WriteLine("Done!");
   }    
 }
