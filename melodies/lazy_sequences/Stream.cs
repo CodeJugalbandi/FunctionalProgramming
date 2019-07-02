@@ -91,7 +91,7 @@ sealed public class Stream<T> {
     else 
       return Tail.Where(pred);
   }
-  
+  // Flatmap
   public Stream<R> SelectMany<R>(Func<T, Stream<R>> fn) {
     if (IsEmpty)
       return Stream<R>.Empty;
@@ -143,7 +143,22 @@ sealed public class Stream<T> {
     
     return fn(this.Head, that.Head) + this.Tail.ZipWith(that.Tail, fn);
   }
-  
+  // Aggregate or FoldLeft/Reduce
+  public U Aggregate<U>(U identity, Func<U, T, U> func) {
+    if (IsEmpty)
+      return identity;
+    
+    return Tail.Aggregate(func(identity, Head), func);
+  }
+  // Scan
+  public Stream<U> Scan<U>(U identity, Func<U, T, U> func) {
+    if (IsEmpty)
+      return Stream<U>.Empty;
+
+    U newHead = func(identity, Head);
+    return newHead + Tail.Scan(newHead, func);
+  }
+
   public (Stream<T>, Stream<T>) Split(Predicate<T> pred) {
     (Stream<T>, Stream<T>) Split0(Stream<T> yesAcc, Stream<T> noAcc, Stream<T> source) {
       if (source.IsEmpty) 
@@ -374,7 +389,18 @@ class Test {
     foreach (var item in indexed) {
       Console.WriteLine(item);
     }
-    // Console.WriteLine(indexed);
+    
+    // Aggregate
+    var sum1 = Stream<int>.Of(1, 2, 3, 4).Aggregate(0, (acc, elem) => acc + elem);
+    Console.WriteLine($"sum = {sum1}"); // 10
+    var sum2 = Stream<int>.Of<int>().Aggregate(0, (acc, elem) => acc + elem);  
+    Console.WriteLine($"sum = {sum2}"); // 0
+    
+    // Scan (prints running sum)
+    Stream<int>.Of(1, 2, 3, 4).Scan(0, (acc, elem) => acc + elem).ForEach(Console.WriteLine); 
+    // 1 3 6 10
+    Stream<int>.Of<int>().Scan(0, (acc, elem) => acc + elem).ForEach(Console.WriteLine);  // Prints Nothing
+    
     Console.WriteLine("Done!");
   }    
 }
