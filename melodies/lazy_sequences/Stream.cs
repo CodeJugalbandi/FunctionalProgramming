@@ -146,9 +146,9 @@ sealed public class Stream<T> {
     return this;
   }
   
-  public Stream<ValueTuple<T,U>> Zip<U>(Stream<U> that) {
+  public Stream<(T,U)> Zip<U>(Stream<U> that) {
     if (this.IsEmpty || that.IsEmpty)
-      return Stream<ValueTuple<T,U>>.Empty;
+      return Stream<(T,U)>.Empty;
     
     return (this.Head, that.Head) + this.Tail.Zip(that.Tail);
   }
@@ -166,6 +166,28 @@ sealed public class Stream<T> {
     
     return Tail.Aggregate(func(identity, Head), func);
   }
+  
+  public bool All(Predicate<T> pred) {
+    bool All0(bool accumulator, Stream<T> stream) {
+      if (stream.IsEmpty || accumulator == false)
+        return accumulator;
+
+      return All0(accumulator && pred(stream.Head), stream.Tail);
+    }
+    var initial = IsEmpty ? false : true;
+    return All0(initial, this);
+  }
+  
+  public bool Any(Predicate<T> pred) {
+    bool Any0(bool accumulator, Stream<T> stream) {
+      if (stream.IsEmpty || accumulator == true)
+        return accumulator;
+
+      return Any0(accumulator || pred(stream.Head), stream.Tail);
+    }
+    return Any0(false, this);
+  }
+  
   // Scan
   public Stream<U> Scan<U>(U identity, Func<U, T, U> func) {
     if (IsEmpty)
@@ -411,6 +433,17 @@ class Test {
     Console.WriteLine($"sum = {sum1}"); // 10
     var sum2 = Stream<int>.Of<int>().Aggregate(0, (acc, elem) => acc + elem);
     Console.WriteLine($"sum = {sum2}"); // 0
+
+    // All
+    Console.WriteLine(Stream<int>.Of<int>().All(x => x % 2 == 0));        // False
+    Console.WriteLine(Stream<int>.Of<int>(2, 4).All(x => x % 2 == 0));    // True
+    Console.WriteLine(Stream<int>.Of<int>(1, 2, 4).All(x => x % 2 == 0)); // False
+    
+    // Any
+    Console.WriteLine(Stream<int>.Of<int>().Any(x => x % 2 == 0));        // False
+    Console.WriteLine(Stream<int>.Of<int>(2, 4).Any(x => x % 2 == 0));    // True
+    Console.WriteLine(Stream<int>.Of<int>(1, 2, 4).Any(x => x % 2 == 0)); // True
+    Console.WriteLine(Stream<int>.Of<int>(1, 3).Any(x => x % 2 == 0));    // False
 
     // Scan (prints running sum)
     Stream<int>.Of(1, 2, 3, 4).Scan(0, (acc, elem) => acc + elem).ForEach(Console.WriteLine);
