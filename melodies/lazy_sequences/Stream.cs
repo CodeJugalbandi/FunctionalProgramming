@@ -174,8 +174,7 @@ sealed public class Stream<T> {
 
       return All0(accumulator && pred(stream.Head), stream.Tail);
     }
-    var initial = IsEmpty ? false : true;
-    return All0(initial, this);
+    return All0(true, this);
   }
   
   public bool Any(Predicate<T> pred) {
@@ -435,7 +434,7 @@ class Test {
     Console.WriteLine($"sum = {sum2}"); // 0
 
     // All
-    Console.WriteLine(Stream<int>.Of<int>().All(x => x % 2 == 0));        // False
+    Console.WriteLine(Stream<int>.Of<int>().All(x => x % 2 == 0));        // True
     Console.WriteLine(Stream<int>.Of<int>(2, 4).All(x => x % 2 == 0));    // True
     Console.WriteLine(Stream<int>.Of<int>(1, 2, 4).All(x => x % 2 == 0)); // False
     
