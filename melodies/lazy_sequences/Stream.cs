@@ -34,7 +34,7 @@ sealed public class Stream<T> {
     if (s.IsEmpty)
       return new Stream<T>(element, new Lazy<Stream<T>>(() => Stream<T>.Empty));
     
-    return new Stream<T>(element, new Lazy<Stream<T>>(() => s.Head + s.Tail));
+    return new Stream<T>(element, new Lazy<Stream<T>>(() => s));
   }
   
   // Concat another stream  
